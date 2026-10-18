@@ -1018,32 +1018,45 @@ De vraag die ik me stel: welke verzekeraar durft als eerste zijn distributiemode
     updatePreview();
   });
 
-  // URL params (Make.com passes data via URL hash or query)
+  // URL params (Make.com passes data via URL hash as key=value&key=value pairs,
+  // each value percent-encoded with encodeURIComponent/encodeURL — NOT as JSON,
+  // because article text can contain quotes and newlines that break JSON parsing.)
   function loadFromParams() {
     try {
       const hash = location.hash.slice(1);
       if (!hash) return;
-      const data = JSON.parse(decodeURIComponent(hash));
-      if (data.title) document.getElementById('article-title').textContent = data.title;
-      if (data.url) {
+      const data = new URLSearchParams(hash);
+      if (!data.has('title') && !data.has('heading') && !data.has('body')) return;
+
+      const title = data.get('title');
+      const url = data.get('url');
+      const score = data.get('score');
+      const reason = data.get('reason');
+      const heading = data.get('heading');
+      const body = data.get('body');
+      const hashtags = data.get('hashtags');
+      const photos = data.get('photos');
+
+      if (title) document.getElementById('article-title').textContent = title;
+      if (url) {
         const a = document.getElementById('article-url');
-        a.href = data.url;
-        a.textContent = new URL(data.url).hostname.replace('www.','');
+        a.href = url;
+        try { a.textContent = new URL(url).hostname.replace('www.',''); } catch(e) { a.textContent = url; }
       }
-      if (data.score) document.getElementById('rel-score').textContent = data.score;
-      if (data.reason) document.getElementById('article-reason').textContent = data.reason;
-      if (data.heading) {
-        document.getElementById('post-heading').value = data.heading;
-        originalHeading = data.heading;
+      if (score) document.getElementById('rel-score').textContent = score;
+      if (reason) document.getElementById('article-reason').textContent = reason;
+      if (heading) {
+        document.getElementById('post-heading').value = heading;
+        originalHeading = heading;
         autoResize(document.getElementById('post-heading'));
       }
-      if (data.body) {
-        document.getElementById('post-body').value = data.body;
-        originalPost = data.body;
+      if (body) {
+        document.getElementById('post-body').value = body;
+        originalPost = body;
         updateCharCount();
       }
-      if (data.hashtags) document.getElementById('post-hashtags').value = data.hashtags;
-      if (data.photos) loadPhotos(data.photos);
+      if (hashtags) document.getElementById('post-hashtags').value = hashtags;
+      if (photos) loadPhotos(photos.split(','));
       updatePreview();
     } catch(e) { /* no params, show example content */ }
   }
