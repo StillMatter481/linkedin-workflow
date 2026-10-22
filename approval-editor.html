@@ -1037,6 +1037,13 @@ De vraag die ik me stel: welke verzekeraar durft als eerste zijn distributiemode
       const hashtags = data.get('hashtags');
       const photos = data.get('photos');
 
+      // Hide source details that were not passed in, so no placeholder text is shown
+      const hideRow = (id, hide) => { const r = document.getElementById(id).closest('.source-row'); if (r) r.style.display = hide ? 'none' : ''; };
+      hideRow('article-url', !url);
+      hideRow('article-reason', !reason);
+      const scoreBadge = document.querySelector('.relevance-score');
+      if (scoreBadge) scoreBadge.style.display = score ? '' : 'none';
+
       if (title) document.getElementById('article-title').textContent = title;
       if (url) {
         const a = document.getElementById('article-url');
