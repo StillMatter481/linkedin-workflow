@@ -793,24 +793,24 @@
   <div class="card">
     <div class="card-header">
       <span class="card-title">Bronartikelen</span>
-      <span class="relevance-score">
+      <span class="relevance-score" style="display:none">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        Score: <span id="rel-score">8.5</span>/10
+        Score: <span id="rel-score"></span>/10
       </span>
     </div>
     <div class="card-body">
       <div class="source-rows">
-        <div class="source-row">
+        <div class="source-row" style="display:none">
           <span class="source-label">Titel</span>
-          <span class="source-value" id="article-title">Hoe AI de verzekeringsmarkt fundamenteel verandert</span>
+          <span class="source-value" id="article-title"></span>
         </div>
-        <div class="source-row">
+        <div class="source-row" style="display:none">
           <span class="source-label">Bron</span>
-          <span class="source-value"><a id="article-url" href="#" target="_blank">finextra.com</a></span>
+          <span class="source-value"><a id="article-url" href="#" target="_blank" rel="noopener"></a></span>
         </div>
-        <div class="source-row">
+        <div class="source-row" style="display:none">
           <span class="source-label">Reden</span>
-          <span class="source-value" id="article-reason">Directe relevantie voor AI-distributie in financiële diensten met strategische implicaties</span>
+          <span class="source-value" id="article-reason"></span>
         </div>
       </div>
     </div>
@@ -830,22 +830,12 @@
       <textarea class="post-heading-input" id="post-heading" rows="2"
         placeholder="Koptekst (vetgedrukt, eerste regel)"
         oninput="updatePreview(); autoResize(this)"
-      >AI hertekent de verzekeringsmarkt – maar niet op de manier die verzekeraars verwachtten</textarea>
+      ></textarea>
 
       <textarea class="post-body-input" id="post-body"
         placeholder="Post tekst (±300 woorden)..."
         oninput="updatePreview(); updateCharCount()"
-      >Vijf jaar geleden was het gesprek over AI in verzekeringen nog grotendeels theoretisch. Vandaag zien we dat AI niet de producten of polissen verandert — maar de manier waarop klanten überhaupt bij een verzekeraar terechtkomen.
-
-De grootste disruptie speelt zich af aan de voorkant van de keten: distributie. Vergelijkingssites werden slimmer, maar nu gaan we verder. AI-gedreven adviessystemen beginnen de rol over te nemen van de tussenpersoon. Niet door die tussenpersoon te vervangen, maar door zijn positie te verschuiven. Van informatieverstrekker naar vertrouwenscoach.
-
-Wat betekent dit voor merkstrategie? Verzekeraars die historisch investeerden in naamsbekendheid, moeten nu investeren in iets abstracter: algoritme-aanwezigheid. Hoe zorg je dat jouw merk verschijnt in een AI-aanbeveling? Dat is de nieuwe strijd om share of mind.
-
-De parallel met wat e-commerce deed met retail is treffend, maar ook misleidend. Bij retail was de disruptie zichtbaar: de winkel verdween. Bij verzekeringen is de disruptie onzichtbaar. De klant ziet geen verschil. Maar voor de verzekeraar is het existentieel.
-
-Organisaties die dit vroeg begrijpen, bouwen nu aan een unieke positie: niet als aanbieder van producten, maar als component in een ecosysteem van AI-platforms. Dat vraagt om een fundamenteel andere aanpak van merkpositionering en partnerschappen.
-
-De vraag die ik me stel: welke verzekeraar durft als eerste zijn distributiemodel volledig los te laten — en te bouwen op vertrouwen in het algoritme?</textarea>
+      ></textarea>
 
       <div class="post-actions">
         <button class="icon-btn" onclick="copyPost()">Kopieer tekst</button>
@@ -855,7 +845,7 @@ De vraag die ik me stel: welke verzekeraar durft als eerste zijn distributiemode
       <textarea class="hashtags-input" id="post-hashtags"
         oninput="updatePreview()"
         rows="2"
-      >#verzekeringen #AI #distributiestrategie #merkstrategie #financiëlediensten #insurtech</textarea>
+      ></textarea>
 
       <div class="char-count" id="char-count">0 / 3000 tekens</div>
     </div>
@@ -1039,6 +1029,7 @@ De vraag die ik me stel: welke verzekeraar durft als eerste zijn distributiemode
 
       // Hide source details that were not passed in, so no placeholder text is shown
       const hideRow = (id, hide) => { const r = document.getElementById(id).closest('.source-row'); if (r) r.style.display = hide ? 'none' : ''; };
+      hideRow('article-title', !title);
       hideRow('article-url', !url);
       hideRow('article-reason', !reason);
       const scoreBadge = document.querySelector('.relevance-score');
