@@ -919,13 +919,10 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Direct plaatsen
         </button>
-        <button class="schedule-option" onclick="setSchedule('later', this)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Plannen
-        </button>
       </div>
+      <p style="font-size:13px;color:var(--fg-2);margin:8px 0 0;">De post verschijnt direct op LinkedIn zodra je goedkeurt. Wil je hem later plaatsen, keur dan pas op dat moment goed.</p>
 
-      <div id="custom-time-row">
+      <div id="custom-time-row" hidden>
         <label style="font-size:13px;color:var(--fg-2);">Datum en tijd:</label>
         <input type="datetime-local" class="datetime-input" id="scheduled-datetime">
       </div>
@@ -984,6 +981,8 @@
   let selectedPhotoIndex = 0;
   let selectedPhotoUrl = '';
   let scheduleMode = 'now';
+  // Signature from the mail link: only signed, recent approvals are posted by Make
+  const postToken = { t: '', sig: '', url: '' };
   let originalPost = '';
   let originalHeading = '';
 
@@ -1027,6 +1026,9 @@
       const hashtags = data.get('hashtags');
       const photos = data.get('photos');
       const credits = data.get('credits');
+      postToken.t = data.get('t') || '';
+      postToken.sig = data.get('sig') || '';
+      postToken.url = url || '';
 
       // Hide source details that were not passed in, so no placeholder text is shown
       const hideRow = (id, hide) => { const r = document.getElementById(id).closest('.source-row'); if (r) r.style.display = hide ? 'none' : ''; };
@@ -1242,9 +1244,27 @@
 
   function doApprove() {
     closeDialog('approve-overlay');
+    // Safety: never send unsigned links (old or hand-made) to Make
+    if (!postToken.sig || !postToken.t) {
+      copyPost();
+      showToast('Deze link is niet ondertekend, dus de post wordt niet geplaatst. De tekst staat op je klembord.');
+      return;
+    }
+    // Safety: approve each post only once in this browser
+    const doneKey = 'goedgekeurd:' + postToken.sig;
+    try {
+      if (localStorage.getItem(doneKey)) {
+        showToast('Deze post is al goedgekeurd.');
+        return;
+      }
+    } catch (e) {}
+    document.querySelectorAll('.btn-approve, .btn-reject').forEach(b => b.disabled = true);
     // Build data payload for Make.com webhook
     const payload = {
       action: 'approve',
+      t: postToken.t,
+      sig: postToken.sig,
+      url: postToken.url,
       heading: document.getElementById('post-heading').value,
       body: document.getElementById('post-body').value,
       hashtags: document.getElementById('post-hashtags').value,
@@ -1262,6 +1282,7 @@
         body: JSON.stringify(payload)
       })
       .then(() => {
+        try { localStorage.setItem(doneKey, String(Date.now())); } catch (e) {}
         showSuccessState('Goedgekeurd! Post wordt geplaatst op LinkedIn.');
       })
       .catch(() => {
@@ -1276,15 +1297,7 @@
   function doReject() {
     closeDialog('reject-overlay');
     showToast('Post afgewezen');
-    // Optionally trigger reject webhook
-    const webhookUrl = getWebhookUrl();
-    if (webhookUrl && webhookUrl !== 'WEBHOOK_URL_HIER') {
-      fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'reject' })
-      }).catch(() => {});
-    }
+    // Rejecting sends nothing to Make, so nothing can end up in the queue
     setTimeout(() => {
       document.querySelector('.status-badge').innerHTML = '<span style="color:var(--reject)">✕ Afgewezen</span>';
       document.querySelector('.status-badge').style.background = 'var(--reject-light)';
